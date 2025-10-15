@@ -3,6 +3,7 @@ namespace WindowsFormsNaidisUL
     using System;
     using System.Drawing;
     using System.Windows.Forms;
+    
 
     public partial class Form1 : Form
     {
@@ -17,7 +18,7 @@ namespace WindowsFormsNaidisUL
         TabPage tabP1, tabP2, tabP3;
         ListBox lb;
         bool t = true;
-        int click = 0;
+        
 
         public Form1()
         {
@@ -30,6 +31,7 @@ namespace WindowsFormsNaidisUL
             tree.Dock = DockStyle.Left;
             tree.AfterSelect += Tree_AfterSelect;
             TreeNode tn = new TreeNode("Ülesanne");
+            tn.Nodes.Add(new TreeNode("Silt"));
             tn.Nodes.Add(new TreeNode("PictureBox"));
             tn.Nodes.Add(new TreeNode("Checkbox"));
             tn.Nodes.Add(new TreeNode("RadioButton"));
@@ -38,16 +40,7 @@ namespace WindowsFormsNaidisUL
             tn.Nodes.Add(new TreeNode("ListBox"));
             tn.Nodes.Add(new TreeNode("Menu"));
 
-            tree.Nodes.Add(tn);
-            this.Controls.Add(tree);
 
-            // Nupp
-            btn = new Button();
-            btn.Text = "Vajuta siia";
-            btn.Location = new Point(150, 30);
-            btn.Height = 30;
-            btn.Width = 100;
-            btn.Click += Btn_Click;
 
             // Pealkiri
             lbl = new Label();
@@ -58,6 +51,9 @@ namespace WindowsFormsNaidisUL
             lbl.MouseHover += Lbl_MouseHover;
             lbl.MouseLeave += Lbl_MouseLeave;
 
+
+          
+
             // Pilt
             pic = new PictureBox();
             pic.Size = new Size(50, 50);
@@ -67,15 +63,16 @@ namespace WindowsFormsNaidisUL
             pic.DoubleClick += Pic_DoubleClick;
 
 
-            // Kontrollime, kas pilt töötab
-            this.Controls.Add(btn);
-            this.Controls.Add(lbl);
-            this.Controls.Add(pic);
+            tree.Nodes.Add(tn);
+            this.Controls.Add(tree);
+           
+
         }
 
         // Topeltklõpsamine PictureBox-is, et vaheldumisi pilte kuvada
+        int click = 0;
         private void Pic_DoubleClick(object sender, EventArgs e)
-        {
+        {   //Double_Click -> carusel (3-4 images) 1-2-3-4-1-2-3-4-... 
             string[] images = { "pervaja.jpg", "vtoraja.jpg", "tri.jpg" };
             string fail = images[click];
             pic.Image = Image.FromFile(@"..\..\Images\" + fail);
@@ -109,25 +106,33 @@ namespace WindowsFormsNaidisUL
         private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
 
         {
-            if (e.Node.Text == "Pilt")
+            if (e.Node.Text == "PictureBox")
             {
                 this.Controls.Add(pic);
 
             }
+            else if (e.Node.Text == "Silt")
+            {
+                this.Controls.Add(lbl);
+            }
 
             else if (e.Node.Text == "Checkbox")
             {
-                c_btn1 = new CheckBox();
-                c_btn1.Text = "Vali mind";
-                c_btn1.Size = new Size(c_btn1.Text.Length * 9, 20);
-                c_btn1.Location = new Point(310, 420);
+                c_btn1 = new CheckBox() { Text = "Suurenda akent", Location = new Point(310, 420), AutoSize = true };
                 c_btn1.CheckedChanged += C_btn1_CheckedChanged;
-                c_btn2 = new CheckBox();
-                c_btn2.Size = new Size(100, 100);
-                c_btn2.Image = Image.FromFile(@"..\..\Images\about.png");
-                c_btn2.Location = new Point(310, 450);
+
+                c_btn2 = new CheckBox() { Text = "Näita pilti", Location = new Point(310, 450), AutoSize = true };
+                c_btn2.CheckedChanged += (s, ev) => { pic.Visible = c_btn2.Checked; };
+
+                CheckBox c_btn3 = new CheckBox() { Text = "Muuda pealkirja värvi", Location = new Point(310, 480), AutoSize = true };
+                c_btn3.CheckedChanged += (s, ev) => { lbl.ForeColor = c_btn3.Checked ? Color.Red : Color.Black; };
+
+
+
                 this.Controls.Add(c_btn1);
                 this.Controls.Add(c_btn2);
+                this.Controls.Add(c_btn3);
+
             }
             else if (e.Node.Text == "RadioButton")
             {
@@ -144,7 +149,7 @@ namespace WindowsFormsNaidisUL
             }
             else if (e.Node.Text == "MessageBox")
             {
-                MessageBox.Show("MessageBox", "Kõige lihtsam aken");
+                MessageBox.Show("nastja kasutab chatgpt merkulova tunnis", "TEADE");
             }
             else if (e.Node.Text == "TabControl")
             {
@@ -160,7 +165,7 @@ namespace WindowsFormsNaidisUL
                 WebBrowser wb1 = new WebBrowser
                 {
                     Dock = DockStyle.Fill,
-                    Url = new Uri("https://moodle.edu.ee") 
+                    Url = new Uri("https://moodle.edu.ee")
                 };
                 tabP1.Controls.Add(wb1);
 
@@ -182,6 +187,31 @@ namespace WindowsFormsNaidisUL
             {
                 AddListBox();
             }
+            else if (e.Node.Text == "MainMenu")
+            {
+                Menu menu = new Menu();
+                MenuItem menuFile = new MenuItem("File");
+                menuFile.MenuItems.Add("Exit", new EventHandler(menuFile_Exit_Select));
+
+                // Lisa kaks oma punkti
+                menuFile.MenuItems.Add("Tere!", (s, ev) => MessageBox.Show("Tere tulemast!"));
+                menuFile.MenuItems.Add("Info", (s, ev) => MessageBox.Show("See on info dialoog."));
+
+                menu.MenuItems.Add(menuFile);
+                this.Menu = menu;
+            }
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void menuFile_Exit_Select(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         // Lisab ListBox
@@ -247,18 +277,19 @@ namespace WindowsFormsNaidisUL
         {
             if (t)
             {
-                this.Size = new Size(600, 400);
+                this.Size = new Size(1000, 1000);
                 pic.BorderStyle = BorderStyle.Fixed3D;
-                c_btn1.Text = "väike";
+                c_btn1.Text = "Tee aken väiksemaks";
                 c_btn1.Font = new Font("Arial", 10, FontStyle.Bold);
                 t = false;
             }
             else
             {
-                this.Size = new Size(700, 500);
-                c_btn1.Text = "suur";
+                this.Size = new Size(800, 700);
+                c_btn1.Text = "Suurenda akent";
                 c_btn1.Font = new Font("Arial", 10, FontStyle.Bold);
                 t = true;
+
             }
         }
     }
